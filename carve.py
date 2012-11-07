@@ -160,8 +160,21 @@ def vadd_seam(im, sarray):
     return new_im
     
 
-def carve(file, wd_rm, ht_rm):
+def carve(file, ratio):
     im = Image.open(file)
+    
+    wd_rm = 0
+    ht_rm = 0
+    
+    if ratio < 1:
+        wd_rm = im.size[0] - int(ratio*im.size[1])
+    elif ratio > 1:
+        ht_rm = im.size[1] - int(ratio*im.size[0])
+    else:
+        if im.size[0] > im.size[1]:
+            wd_rm = im.size[0] - im.size[1]
+        else:
+            ht_rm = im.size[1] - im.size[0]
     
     for i in range(wd_rm):
         [x_array, y_array] = gradient(im)
@@ -176,5 +189,9 @@ def carve(file, wd_rm, ht_rm):
     im.show()
     
 if __name__ == "__main__":
-    f = "sand.jpg"
-    carve(f, 0, 70)
+    f = raw_input("File: ")
+    ratio = raw_input("Aspect ratio (write as x:y): ")
+    
+    [x, y] = map(lambda a: float(a), ratio.split(":"))
+    
+    carve(f, x/y)
