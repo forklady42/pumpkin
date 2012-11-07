@@ -1,22 +1,58 @@
 import Image
 import numpy as np
+#import scipy
 from math import fabs
 
 
 def gradient(im):
     
-    im_grey = im.convert("F")
+    #im_grey = im.convert("F")
+    
+    #im_grey.show()
     
     #what if try with rgb instead of grey?
-    blah = np.transpose(np.array(im_grey.getdata()).reshape(im_grey.size[0], im_grey.size[1]))    
-    x,y=np.gradient(blah)
+    #blah = np.transpose(np.array(im_grey.getdata()).reshape(im_grey.size[0], im_grey.size[1]))    
+    #x,y=np.gradient(blah)
     
+    ############################
+    
+    #RGB:
+    r = np.zeros(shape=(im.size[0], im.size[1]))
+    g = np.zeros(shape=(im.size[0], im.size[1]))
+    b = np.zeros(shape=(im.size[0], im.size[1]))
+    blah = np.transpose(np.array(im.getdata()).reshape(3, im.size[0], im.size[1])) 
+    
+    for i in range(im.size[0]):
+        for j in range(im.size[1]):
+            
+            r[i][j] = blah[j][i][0]
+            g[i][j] = blah[j][i][1]
+            b[i][j] = blah[j][i][2]
+            
+    xgrad = np.transpose(np.gradient(r)[0]+np.gradient(g)[0]+np.gradient(b)[0])
+    ygrad = np.transpose(np.gradient(r)[1]+np.gradient(g)[1]+np.gradient(b)[1])
+    
+    return xgrad, ygrad
+    
+    
+    ############################
     #Laplacian:
-    return np.gradient(x)[0], np.gradient(y)[1]
+    #return np.gradient(x)[0], np.gradient(y)[1]
     
-    #return np.gradient(blah)
+    #OR Gradient:
+    #return x,y
     
-#def sobel():
+'''
+def laplacian_of_gaussian(im):
+    
+    im_grey = im.convert("F")
+    
+    #pi
+    gauss = 1/(2*3.14
+    
+    scipy.signal.convolve2d(
+    
+'''
     
 def v_seam(x_array, y_array):
     
@@ -31,7 +67,7 @@ def v_seam(x_array, y_array):
     
     for i in range(1, row):
         for j in range(pixel):
-            grad = fabs(x_array[i, j]) + fabs(y_array[i, j])
+            grad = (fabs(x_array[i, j]) + fabs(y_array[i, j]))**2
             
             if (j < (pixel-1)) and (j != 0):
                 
@@ -92,14 +128,16 @@ def h_seam(x_array, y_array):
     return np.transpose(a)
     
     
-def vdelete_seam(im):
+def vdelete_seam(im, sarray):
     
     pixels = im.load()
-
+    
+    '''
     [x_array, y_array] = gradient(im)
     #grad_array = x_array + y_array
     
     sarray = v_seam(x_array, y_array)
+    '''
     
     width, height = im.size[0], im.size[1]
     
@@ -122,44 +160,131 @@ def vdelete_seam(im):
     #pixels_new[0, 39] = (0,100,0)
     return new_im
     
-def hdelete_seam(im):
+def hdelete_seam(im, sarray):
     
     pixels = im.load()
-
+    '''
     [x_array, y_array] = gradient(im)
     
     sarray = h_seam(x_array, y_array)
+    '''
     
     width, height = im.size[0], im.size[1]
     
     new_im = Image.new('RGB', (width, height-1))
-    #new_im = Image.new('RGB', (width, height))
     pixels_new = new_im.load()
     
     for x in range(width):
         removed = 0
         for y in range(height):
             if sarray[y, x]:
-                #pixels_new[x, y] = (0, 100, 0)
-                if removed >= 1:
-                    print "Alert!"
                 removed += 1
             else:
                 pixels_new[x, y-removed] = pixels[x, y]
-                #pixels_new[x, y] = pixels[x,y]
                 
     return new_im
+"""
+def vadd_seam(im, seam_stack):
+    
+    if seam_stack == []:
+        return im
+    
+    width, height = im.size[0], im.size[1]
+    pixels = im.load()
+    
+    new_im = Image.new('RGB', (width+len(seam_stack), height))
+    pixels_new = new_im.load()
+    
+    count = 0
+    while len(seam_stack) > 0:
+        
+        sarray = seam_stack.pop()
+        for y in range(height):
+            added = 0
+            for x in range(width+count):
+                
+                if sarray[y, x]:
+                    (r, g, b) = reduce(lambda a, b: (a[0]/2 + b[0]/2, a[1]/2 + b[1]/2, a[2]/2 + b[2]/2), [pixels[x, y], pixels [x+1, y]])
+                                    
+                    pixels_new[x, y] = pixels[x,y]
+                    pixels_new[x+1, y] = (0, 100, 0)
+                    added += 1
+                    
+                else:
+                    pixels_new[x+added, y] = pixels[x, y]
+                    
+                #pixels_new[x+added, y] = pixels[x,y]
+        pixels = pixels_new
+        im.show()
+        count+=1
+        new_im.show()
+                
+    return new_im
+"""
+
+def vadd_seam(im, sarray):
+    
+    width, height = im.size[0], im.size[1]
+    pixels = im.load()
+    
+    new_im = Image.new('RGB', (width+1, height))
+    pixels_new = new_im.load()
+
+    for y in range(height):
+        added = 0
+        for x in range(width):
+            
+            if sarray[y, x]:
+                (r, g, b) = reduce(lambda a, b: (a[0]/2 + b[0]/2, a[1]/2 + b[1]/2, a[2]/2 + b[2]/2), [pixels[x, y], pixels [x+1, y]])
+                                
+                pixels_new[x, y] = pixels[x,y]
+                pixels_new[x+1, y] = (0, 100, 0)
+                added += 1
+                
+            else:
+                pixels_new[x+added, y] = pixels[x, y]
+                
+    return new_im
+    
 
 def main(wd_rm, ht_rm):
-    im = Image.open("sand.jpg")
+    im = Image.open("tower.jpg")
     
     for i in range(wd_rm):
-        im = vdelete_seam(im)
+        [x_array, y_array] = gradient(im)
+        sarray = v_seam(x_array, y_array)
+        im = vdelete_seam(im, sarray)
         
     for i in range(ht_rm):
-        im = hdelete_seam(im)
+        [x_array, y_array] = gradient(im)
+        sarray = h_seam(x_array, y_array)
+        im = hdelete_seam(im, sarray)
+    '''
+    im2 = im
+    sarray_stack = []
+    for i in range(wd_add):
+        [x_array, y_array] = gradient(im2)
+        sarray = v_seam(x_array, y_array)
+        sarray_stack.append(sarray)
+        im2 = vdelete_seam(im2, sarray)
+    im = vadd_seam(im, sarray_stack)
+    
+    
+    im2 = im
+    sarray_stack = []
+    for i in range(wd_add):
+        [x_array, y_array] = gradient(im2)
+        sarray = v_seam(x_array, y_array)
+        sarray_stack.append(sarray)
+        im2 = vdelete_seam(im2, sarray)
+    print len(sarray_stack)
+    for j in sarray_stack:
+        im2 = vadd_seam(im2, j)
+    im = im2
+    '''
+    
     
     im.show()
-
+    
 if __name__ == "__main__":
-    main(0, 100)
+    main(150, 0)
