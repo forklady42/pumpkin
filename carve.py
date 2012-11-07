@@ -8,14 +8,14 @@ def gradient(im):
     r = np.zeros(shape=(im.size[0], im.size[1]))
     g = np.zeros(shape=(im.size[0], im.size[1]))
     b = np.zeros(shape=(im.size[0], im.size[1]))
-    blah = np.transpose(np.array(im.getdata()).reshape(3, im.size[0], im.size[1])) 
+    pixels = np.transpose(np.array(im.getdata()).reshape(3, im.size[0], im.size[1])) 
     
     for i in range(im.size[0]):
         for j in range(im.size[1]):
             
-            r[i][j] = blah[j][i][0]
-            g[i][j] = blah[j][i][1]
-            b[i][j] = blah[j][i][2]
+            r[i][j] = pixels[j][i][0]
+            g[i][j] = pixels[j][i][1]
+            b[i][j] = pixels[j][i][2]
             
     xgrad = np.transpose(np.gradient(r)[0]+np.gradient(g)[0]+np.gradient(b)[0])
     ygrad = np.transpose(np.gradient(r)[1]+np.gradient(g)[1]+np.gradient(b)[1])
@@ -166,15 +166,12 @@ def carve(file, ratio):
     wd_rm = 0
     ht_rm = 0
     
-    if ratio < 1:
+    im_ratio = float(im.size[0])/im.size[1]
+    
+    if ratio < im_ratio:
         wd_rm = im.size[0] - int(ratio*im.size[1])
-    elif ratio > 1:
-        ht_rm = im.size[1] - int(ratio*im.size[0])
-    else:
-        if im.size[0] > im.size[1]:
-            wd_rm = im.size[0] - im.size[1]
-        else:
-            ht_rm = im.size[1] - im.size[0]
+    else:   # The equals to is fine as it should evaluate to zero below
+        ht_rm = im.size[1] - int(1/ratio*im.size[0])
     
     for i in range(wd_rm):
         [x_array, y_array] = gradient(im)
@@ -184,7 +181,7 @@ def carve(file, ratio):
     for i in range(ht_rm):
         [x_array, y_array] = gradient(im)
         sarray = h_seam(x_array, y_array)
-        im = hdelete_seam(im, sarray)    
+        im = hdelete_seam(im, sarray)
     
     im.show()
     
