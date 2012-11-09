@@ -3,25 +3,15 @@ import numpy as np
 from math import fabs
 
 
+@profile
 def gradient(im):
     
-    r = np.zeros(shape=(im.size[0], im.size[1]))
-    g = np.zeros(shape=(im.size[0], im.size[1]))
-    b = np.zeros(shape=(im.size[0], im.size[1]))
-    pixels = np.transpose(np.array(im.getdata()).reshape(3, im.size[0], im.size[1])) 
-    
-    for i in range(im.size[0]):
-        for j in range(im.size[1]):
-            
-            r[i][j] = pixels[j][i][0]
-            g[i][j] = pixels[j][i][1]
-            b[i][j] = pixels[j][i][2]
+    r, g, b = np.array(im).T
             
     xgrad = np.transpose(np.gradient(r)[0]+np.gradient(g)[0]+np.gradient(b)[0])
     ygrad = np.transpose(np.gradient(r)[1]+np.gradient(g)[1]+np.gradient(b)[1])
     
     return xgrad, ygrad
-    
     
 def v_seam(x_array, y_array):
     
@@ -29,7 +19,7 @@ def v_seam(x_array, y_array):
     pointer_array = np.zeros(shape=(x_array.shape))
     
     for a in range(x_array.shape[1]):
-        memo_array[0, a] = fabs(x_array[0, a]) + fabs(y_array[0, a])
+        memo_array[0, a] = (fabs(x_array[0, a]) + fabs(y_array[0, a]))**2
     
     (row, pixel) = x_array.shape
     
@@ -133,33 +123,8 @@ def hdelete_seam(im, sarray):
                 pixels_new[x, y-removed] = pixels[x, y]
                 
     return new_im
-
-
-def vadd_seam(im, sarray):
     
-    width, height = im.size[0], im.size[1]
-    pixels = im.load()
-    
-    new_im = Image.new('RGB', (width+1, height))
-    pixels_new = new_im.load()
-
-    for y in range(height):
-        added = 0
-        for x in range(width):
-            
-            if sarray[y, x]:
-                (r, g, b) = reduce(lambda a, b: (a[0]/2 + b[0]/2, a[1]/2 + b[1]/2, a[2]/2 + b[2]/2), [pixels[x, y], pixels [x+1, y]])
-                                
-                pixels_new[x, y] = pixels[x,y]
-                pixels_new[x+1, y] = (0, 100, 0)
-                added += 1
-                
-            else:
-                pixels_new[x+added, y] = pixels[x, y]
-                
-    return new_im
-    
-
+@profile
 def carve(file, ratio):
     im = Image.open(file)
     
@@ -167,7 +132,7 @@ def carve(file, ratio):
     ht_rm = 0
     
     im_ratio = float(im.size[0])/im.size[1]
-    
+        
     if ratio < im_ratio:
         wd_rm = im.size[0] - int(ratio*im.size[1])
     else:   # The equals to is fine as it should evaluate to zero below
@@ -186,9 +151,10 @@ def carve(file, ratio):
     im.show()
     
 if __name__ == "__main__":
-    f = raw_input("File: ")
-    ratio = raw_input("Aspect ratio (write as x:y): ")
+    #f = raw_input("File: ")
+    #ratio = raw_input("Aspect ratio (enter as x:y): ")
     
-    [x, y] = map(lambda a: float(a), ratio.split(":"))
+    #[x, y] = map(lambda a: float(a), ratio.split(":"))
     
-    carve(f, x/y)
+    #carve(f, x/y)
+    carve("shelf.jpg", 3.5/5.0)
