@@ -2,8 +2,7 @@ import Image
 import numpy as np
 from math import fabs
 
-
-@profile
+#@profile
 def gradient(im):
     
     r, g, b = np.array(im).T
@@ -26,6 +25,7 @@ def v_seam(x_array, y_array):
     
     for i in range(1, row):
         for j in range(pixel):
+            #choosing a norm 
             grad = (fabs(x_array[i, j]) + fabs(y_array[i, j]))**2
             
             if (j < (pixel-1)) and (j != 0):
@@ -71,6 +71,7 @@ def v_seam(x_array, y_array):
     
     mindex = memo_array.argmin(axis=1)[row-1]
     
+    #Mark the lowest energy seam
     trav = [(row-1), mindex]
     for i in range(row):
         seam_array[trav[0], trav[1]] = 1
@@ -124,7 +125,7 @@ def hdelete_seam(im, sarray):
                 
     return new_im
     
-@profile
+#@profile
 def carve(file, ratio):
     im = Image.open(file)
     
@@ -135,7 +136,7 @@ def carve(file, ratio):
         
     if ratio < im_ratio:
         wd_rm = im.size[0] - int(ratio*im.size[1])
-    else:   # The equals to is fine as it should evaluate to zero below
+    else:
         ht_rm = im.size[1] - int(1/ratio*im.size[0])
     
     for i in range(wd_rm):
@@ -151,10 +152,9 @@ def carve(file, ratio):
     im.show()
     
 if __name__ == "__main__":
-    #f = raw_input("File: ")
-    #ratio = raw_input("Aspect ratio (enter as x:y): ")
+    f = raw_input("File: ")
+    ratio = raw_input("Aspect ratio (enter as x:y): ")
     
-    #[x, y] = map(lambda a: float(a), ratio.split(":"))
+    [x, y] = map(lambda a: float(a), ratio.split(":"))
     
-    #carve(f, x/y)
-    carve("shelf.jpg", 3.5/5.0)
+    carve(f, x/y)
