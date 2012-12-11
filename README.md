@@ -3,6 +3,8 @@ Pumpkin
 
 A seam carver implementation for [content aware image scaling] (http://www.faculty.idc.ac.il/arik/SCWeb/imret/imret.pdf).
 
+[Read my reflections on this project.] (http://betsy-cannon.com/2012/11/07/seam-carving.html)
+
 ##Usage
 
     $ python carve.py
